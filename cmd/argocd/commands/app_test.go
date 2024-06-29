@@ -2018,10 +2018,6 @@ func (c *fakeAppServiceClient) Get(ctx context.Context, in *applicationpkg.Appli
 
 type fakeAcdClient struct{}
 
-func (c *fakeAcdClient) NewApplicationClientOrDie() (io.Closer, applicationpkg.ApplicationServiceClient) {
-	return &fakeConnection{}, &fakeAppServiceClient{}
-}
-
 func (c *fakeAcdClient) ClientOptions() argocdclient.ClientOptions {
 	return argocdclient.ClientOptions{}
 }
@@ -2076,6 +2072,10 @@ func (c *fakeAcdClient) NewApplicationClient() (io.Closer, applicationpkg.Applic
 
 func (c *fakeAcdClient) NewApplicationSetClient() (io.Closer, applicationsetpkg.ApplicationSetServiceClient, error) {
 	return nil, nil, nil
+}
+
+func (c *fakeAcdClient) NewApplicationClientOrDie() (io.Closer, applicationpkg.ApplicationServiceClient) {
+	return &fakeConnection{}, &fakeAppServiceClient{}
 }
 
 func (c *fakeAcdClient) NewApplicationSetClientOrDie() (io.Closer, applicationsetpkg.ApplicationSetServiceClient) {
