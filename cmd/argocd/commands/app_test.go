@@ -558,7 +558,7 @@ func TestPrintOperationResult(t *testing.T) {
 			return nil
 		})
 
-		expectation := "  Operation:          Sync\nSync Revision:      revision\nPhase:              \nStart:              0001-01-01 00:00:00 +0000 UTC\nFinished:           2020-11-10 23:00:00 +0000 UTC\nDuration:           2333448h16m18.871345152s\n"
+		expectation := "Operation:          Sync\nSync Revision:      revision\nPhase:              \nStart:              0001-01-01 00:00:00 +0000 UTC\nFinished:           2020-11-10 23:00:00 +0000 UTC\nDuration:           2333448h16m18.871345152s\n"
 		if output != expectation {
 			t.Fatalf("Incorrect print operation output %q, should be %q", output, expectation)
 		}
@@ -2019,14 +2019,6 @@ func (c *fakeAppServiceClient) Get(ctx context.Context, in *applicationpkg.Appli
 			OperationState: &v1alpha1.OperationState{
 				SyncResult: &v1alpha1.SyncOperationResult{
 					Revision: "revision",
-					//Resources: v1alpha1.ResourceResults{
-					//	&v1alpha1.ResourceResult{
-					//		Message: "health-message",
-					//	},
-					//	&v1alpha1.ResourceResult{
-					//		Message: "health-message",
-					//	},
-					//},
 				},
 				FinishedAt: &time,
 				Message:    "test",
