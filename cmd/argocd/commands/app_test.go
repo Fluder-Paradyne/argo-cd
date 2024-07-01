@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"k8s.io/apimachinery/pkg/watch"
 
 	"github.com/argoproj/argo-cd/v2/reposerver/apiclient"
 
@@ -1891,8 +1892,12 @@ func TestWaitOnApplicationStatus_JSON_YAML_WideOutput(t *testing.T) {
 		_, _, _ = waitOnApplicationStatus(ctx, acdClient, "app-name", 0, watch, selectResource, "")
 		return nil
 	})
+	timeStr := time.Now().Format("2006-01-02T15:04:05-07:00")
 
-	expectation := `
+	expectation := `TIMESTAMP                  GROUP        KIND   NAMESPACE                  NAME    STATUS   HEALTH        HOOK  MESSAGE
+%s            Service     default         service-name1    Synced  Healthy              
+%s   apps  Deployment     default                  test    Synced  Healthy              
+
 Name:               argocd/test
 Project:            default
 Server:             local
@@ -1919,8 +1924,9 @@ Message:            test
 
 GROUP  KIND        NAMESPACE  NAME           STATUS  HEALTH   HOOK  MESSAGE
        Service     default    service-name1  Synced  Healthy        
-apps   Deployment  default    test           Synced  Healthy
+apps   Deployment  default    test           Synced  Healthy        
 `
+	expectation = fmt.Sprintf(expectation, timeStr, timeStr)
 	assert.Equalf(t, expectation, output, "Incorrect output %q, should be %q", output, expectation)
 }
 
@@ -1930,8 +1936,23 @@ type customAcdClient struct {
 
 func (c *customAcdClient) WatchApplicationWithRetry(ctx context.Context, appName string, revision string) chan *v1alpha1.ApplicationWatchEvent {
 	appEventsCh := make(chan *v1alpha1.ApplicationWatchEvent)
+	// time := metav1.Date(2020, time.November, 10, 23, 0, 0, 0, time.UTC)
+	_, appIf := c.NewApplicationClientOrDie()
+	app, _ := appIf.Get(ctx, &applicationpkg.ApplicationQuery{})
+
+	newApp := v1alpha1.Application{
+		TypeMeta:   app.TypeMeta,
+		ObjectMeta: app.ObjectMeta,
+		Spec:       app.Spec,
+		Status:     app.Status,
+		Operation:  app.Operation,
+	}
 
 	go func() {
+		appEventsCh <- &v1alpha1.ApplicationWatchEvent{
+			Type:        watch.Bookmark,
+			Application: newApp,
+		}
 		close(appEventsCh)
 	}()
 
